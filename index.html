@@ -685,7 +685,6 @@
                 elements.btnAudio.classList.add('hidden');
             }
 
-            // 多頁時顯示上一頁/下一頁按鈕
             if (totalPages > 1) {
                 if (state.currentPageIndex > 0) {
                     elements.floatPrevPage.classList.remove('hidden');
@@ -846,6 +845,7 @@
             if (window.innerWidth < 1024) {
                 openSidebar();
             } else {
+                // 桌機版點擊選單按鈕時，若上方工具列被隱藏了可以順便顯示，或依需求展開
                 if (state.topAndSidebarHidden) {
                     showTopAndSidebarAction();
                 }
@@ -857,7 +857,7 @@
             if (e.target.closest('#url-modal') || e.target.closest('#audio-modal') || e.target.closest('#about-modal') || e.target.closest('button')) return;
             
             if (state.floatingHidden) {
-                // 若浮動按鈕處於隱藏狀態，點擊圖片只顯示浮動按鈕（不影響上方工具列與側邊欄）
+                // 若浮動按鈕處於隱藏狀態，點擊圖片時只顯示浮動按鈕（不影響上方工具列與側邊欄）
                 showFloatingUIAndResetTimer();
             } else {
                 // 若浮動按鈕是顯示的，點擊圖片則隱藏上方工具列與側邊選單
