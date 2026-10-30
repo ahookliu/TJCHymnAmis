@@ -891,12 +891,16 @@
             return Math.sqrt(dx * dx + dy * dy);
         }
 
+        // 修復手機觸控拖曳亂跳：精確追蹤觸控點並阻擋預設事件
         elements.viewport.addEventListener('touchstart', (e) => {
             if (e.target.closest('button') || e.target.closest('#url-modal') || e.target.closest('#audio-modal') || e.target.closest('#about-modal')) return;
             
             if (e.touches.length === 1) {
                 state.isDragging = true;
-                state.dragStart = { x: e.touches[0].clientX - state.panX, y: e.touches[0].clientY - state.panY };
+                state.dragStart = { 
+                    x: e.touches[0].clientX - state.panX, 
+                    y: e.touches[0].clientY - state.panY 
+                };
                 state.initialPinchDistance = null;
             } else if (e.touches.length === 2) {
                 state.isDragging = false;
@@ -907,10 +911,12 @@
 
         elements.viewport.addEventListener('touchmove', (e) => {
             if (e.touches.length === 1 && state.isDragging) {
+                e.preventDefault(); // 防止瀏覽器預設捲動導致閃爍
                 state.panX = e.touches[0].clientX - state.dragStart.x;
-                state.panY = e.touches[0].clientY - state.panY;
+                state.panY = e.touches[0].clientY - state.dragStart.y;
                 updateTransform();
             } else if (e.touches.length === 2 && state.initialPinchDistance) {
+                e.preventDefault();
                 const currentDistance = getTouchDistance(e.touches);
                 const scaleFactor = currentDistance / state.initialPinchDistance;
                 state.zoom = Math.min(Math.max(0.5, state.initialZoom * scaleFactor), 4);
