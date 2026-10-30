@@ -240,7 +240,7 @@
                     <i class="fa-solid fa-chevron-right text-sm"></i>
                 </button>
 
-                <!-- Floating Song Navigation Buttons (Lifted slightly to avoid Netlify badge collision) -->
+                <!-- Floating Song Navigation Buttons -->
                 <button id="btn-prev" class="absolute left-0 bottom-3 z-30 bg-black/70 hover:bg-brand-purple text-gray-200 hover:text-white px-4 py-2 rounded-tr-xl backdrop-blur-md border-t border-r border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-1.5 transition-all">
                     <i class="fa-solid fa-chevron-left text-[10px]"></i>
                     <span>上一首</span>
@@ -672,7 +672,7 @@
         }
 
         function shareCurrentSong() {
-            const baseUrl = "https://tjchymnamis.netlify.app";
+            const baseUrl = "https://ahookliu.github.io/TJCHymnAmis";
             const fullUrl = `${baseUrl}/#${state.currentNum}`;
             
             navigator.clipboard.writeText(fullUrl).then(() => {
@@ -802,7 +802,6 @@
 
         elements.viewport.addEventListener('touchmove', (e) => {
             if (e.touches.length === 1 && state.isDragging) {
-                state.panX = e.touches[0].clientX - state.panX; // wait, fix coordinate delta
                 state.panX = e.touches[0].clientX - state.dragStart.x;
                 state.panY = e.touches[0].clientY - state.dragStart.y;
                 updateTransform();
