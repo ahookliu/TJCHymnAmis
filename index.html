@@ -366,8 +366,8 @@
             { num: 312, title: "CI YIS KO TI 'ELEN", driveId: "1gphw1vnAsCDWrlkUigbAXMHMQS1n4Kcx" , audioId: "" },
             { num: 313, title: "KA LIPAHAKAN KYA ROMA' I KAKARAYAN", driveId: "1Gguu7kxfMgcvajRgxCCW1S5pfxzrNlKJ" , audioId: "" },
             { num: 314, title: "MI LISO'AY KO SALIKAKA", driveId: "1q9eehYxCCcn2BSq1FJv0aXsRYlvD4aXv" , audioId: "" },
-            { num: 315, title: "HEMEKEN TA CI YIS", driveId: "1nX9kdefjCr7HUkzM6RSnRlCjVQwRnjp" , audioId: "" },
-            { num: 316, title: "MA FANA' CI YIS TO LALOM NO MISO", driveId: "1lQPM-Mb0XVSGcRxqwBuCvDdpOISHbvO_" , audioId: "" },
+            { num: 315, title: "HEMEKEN TA CI YIS", driveId: "1nX9kdefjCr7HUkzM6RSnRlCjVQwRnjp-" , audioId: "" },
+            { num: 316, title: "MA FANA' CI YIS TO LALOM NO MISO", driveId: "1lQPM-Mb0XVSGcRxqwBuCvDdpOISHbvO" , audioId: "" },
             { num: 317, title: "'ALETEGAY A RARAW", driveId: "150lbT26UAiVa8k9Q06RUGnCVXE-ZxOp5" , audioId: "" },
             { num: 318, title: "ANINI MI TOOL TO WAMA", driveId: "1QorVq4bKbIzjv3L6PO6KzT4ISL3sEi-M" , audioId: "" },
             { num: 319, title: "MI COMPIAY KO WAMA KAKI TILAAN", driveId: "16WKsYBQNPcx2Y4-YszHM92VGrPqWXS1D" , audioId: "" },
@@ -837,7 +837,13 @@
             updateTransform();
         }
 
-        // 點擊左上角懸浮選單按鈕恢復 UI
+        // 點擊圖片隱藏側邊選單與上方工具列
+        elements.scoreImg.addEventListener('click', (e) => {
+            state.uiHidden = true;
+            elements.appBody.classList.add('hide-ui');
+        });
+
+        // 點擊左上角懸浮選單按鈕顯示側邊選單與上方工具列
         elements.floatingMenuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             state.uiHidden = false;
