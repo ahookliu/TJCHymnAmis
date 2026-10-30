@@ -76,6 +76,16 @@
         .hide-ui #sidebar {
             width: 0 !important;
         }
+        /* 隱藏 UI 時顯示左上角返回按鈕 */
+        #floating-menu-btn {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .hide-ui #floating-menu-btn {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body class="bg-dark-bg text-gray-200 h-full flex flex-col font-sans overflow-hidden" id="app-body">
@@ -159,10 +169,13 @@
                 <!-- Items populated by JS -->
             </div>
 
-            <!-- Sidebar Footer -->
+            <!-- Sidebar Footer with About Button -->
             <div class="p-2.5 border-t border-dark-border text-[11px] text-gray-500 flex items-center justify-between font-mono">
                 <span>共 <strong id="total-songs" class="text-gray-400">100</strong> 首詩歌</span>
-                <span class="text-[9px] text-gray-600">Amis Hymnal v1.0</span>
+                <button id="btn-about" class="text-brand-lightPurple hover:underline flex items-center space-x-1 text-xs">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>關於</span>
+                </button>
             </div>
         </aside>
 
@@ -190,6 +203,9 @@
 
                 <!-- Right Tools Section -->
                 <div class="flex items-center space-x-1 sm:space-x-1.5 text-xs">
+                    <button id="btn-audio" class="p-1.5 text-gray-300 hover:text-amber-400 bg-dark-bg hover:bg-dark-hover rounded-lg border border-dark-border transition hidden" title="播放音檔">
+                        <i class="fa-solid fa-volume-high text-xs"></i>
+                    </button>
                     <button id="btn-custom-url" class="p-1.5 text-gray-300 hover:text-white bg-dark-bg hover:bg-dark-hover rounded-lg border border-dark-border transition" title="設定自訂圖片網址">
                         <i class="fa-solid fa-link text-xs"></i>
                     </button>
@@ -215,14 +231,14 @@
                         </button>
                     </div>
 
-                    <button id="btn-fullscreen" class="p-1.5 text-gray-300 hover:text-white bg-dark-bg hover:bg-dark-hover rounded-lg border border-dark-border transition hidden sm:inline-flex" title="全螢幕展示">
+                    <button id="btn-fullscreen" class="p-1.5 text-gray-300 hover:text-white bg-dark-bg hover:bg-dark-hover rounded-lg border border-dark-border transition inline-flex" title="全螢幕展示">
                         <i class="fa-solid fa-expand text-xs"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Score Display Container -->
-            <div id="viewport" class="flex-1 overflow-hidden relative flex items-center justify-center p-0 bg-[#0a0d12] img-viewport w-full h-full pb-10">
+            <div id="viewport" class="flex-1 overflow-hidden relative flex items-center justify-center p-0 bg-[#0a0d12] img-viewport w-full h-full">
                 
                 <!-- Loading Spinner -->
                 <div id="loading-spinner" class="absolute inset-0 flex items-center justify-center bg-dark-bg/80 z-10 hidden">
@@ -232,6 +248,12 @@
                     </div>
                 </div>
 
+                <!-- Floating Menu Button (Shown when UI is hidden) -->
+                <button id="floating-menu-btn" class="absolute top-4 left-4 z-40 bg-dark-card/90 hover:bg-brand-purple text-white px-3.5 py-2 rounded-xl backdrop-blur-md border border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-2 transition-all">
+                    <i class="fa-solid fa-bars"></i>
+                    <span>選單</span>
+                </button>
+
                 <!-- Floating Page Navigation Arrows -->
                 <button id="float-prev-page" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-brand-purple text-white w-10 h-16 rounded-r-xl backdrop-blur-sm border-y border-r border-dark-border flex items-center justify-center transition shadow-lg hidden" title="上一頁">
                     <i class="fa-solid fa-chevron-left text-sm"></i>
@@ -240,13 +262,13 @@
                     <i class="fa-solid fa-chevron-right text-sm"></i>
                 </button>
 
-                <!-- Floating Song Navigation Buttons -->
-                <button id="btn-prev" class="absolute left-0 bottom-3 z-30 bg-black/70 hover:bg-brand-purple text-gray-200 hover:text-white px-4 py-2 rounded-tr-xl backdrop-blur-md border-t border-r border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-1.5 transition-all">
+                <!-- Floating Song Navigation Buttons (Lifted up from bottom edge) -->
+                <button id="btn-prev" class="absolute left-4 bottom-6 z-30 bg-black/70 hover:bg-brand-purple text-gray-200 hover:text-white px-4 py-2.5 rounded-xl backdrop-blur-md border border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-1.5 transition-all">
                     <i class="fa-solid fa-chevron-left text-[10px]"></i>
                     <span>上一首</span>
                 </button>
 
-                <button id="btn-next" class="absolute right-0 bottom-3 z-30 bg-black/70 hover:bg-brand-purple text-gray-200 hover:text-white px-4 py-2 rounded-tl-xl backdrop-blur-md border-t border-l border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-1.5 transition-all">
+                <button id="btn-next" class="absolute right-4 bottom-6 z-30 bg-black/70 hover:bg-brand-purple text-gray-200 hover:text-white px-4 py-2.5 rounded-xl backdrop-blur-md border border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-1.5 transition-all">
                     <span>下一首</span>
                     <i class="fa-solid fa-chevron-right text-[10px]"></i>
                 </button>
@@ -262,6 +284,23 @@
                          src="https://placehold.co/800x1100/161b22/a855f7?text=A-311+Hemeken+ko+pikansiya\n\n[+真耶穌教會阿美語詩歌+]" 
                          alt="詩歌樂譜" 
                          class="max-h-full max-w-full w-auto h-auto rounded-none shadow-2xl object-contain border-0 cursor-pointer">
+                </div>
+
+                <!-- Audio Player Modal Container -->
+                <div id="audio-modal" class="absolute inset-0 bg-black/70 backdrop-blur-sm z-40 flex items-center justify-center p-4 hidden">
+                    <div class="bg-dark-card border border-dark-border rounded-xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <i class="fa-solid fa-volume-high text-brand-purple mr-2"></i>播放詩歌 <span id="modal-audio-num" class="mx-1 text-brand-lightPurple">311</span>
+                            </h3>
+                            <button id="btn-close-audio" class="text-gray-400 hover:text-white">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <audio id="audio-player" controls class="w-full mt-2">
+                            您的瀏覽器不支援音訊播放元素。
+                        </audio>
+                    </div>
                 </div>
 
                 <!-- Custom URL Modal Container -->
@@ -281,6 +320,33 @@
                         <div class="flex justify-end space-x-2 text-xs">
                             <button id="btn-reset-url" class="px-3 py-1.5 bg-dark-bg hover:bg-dark-hover text-gray-300 rounded-lg border border-dark-border">恢復預設</button>
                             <button id="btn-save-url" class="px-4 py-1.5 bg-brand-purple hover:bg-purple-600 text-white font-medium rounded-lg shadow">儲存設定</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Modal Container -->
+                <div id="about-modal" class="absolute inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+                    <div class="bg-dark-card border border-dark-border rounded-2xl p-6 max-w-xs w-full shadow-2xl flex flex-col items-center text-center space-y-4 relative">
+                        <button id="btn-close-about" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                            <i class="fa-solid fa-xmark text-base"></i>
+                        </button>
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white text-2xl shadow-lg mt-2">
+                            <i class="fa-solid fa-dove"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-white tracking-wide">真耶穌教會讚美詩 v4.0.1</h3>
+                            <p class="text-xs text-gray-400 mt-1">阿美語詩歌專用電子樂譜</p>
+                        </div>
+                        <div class="w-full space-y-2 pt-2">
+                            <button onclick="alert('隱私權政策：本應用程式僅供查詢與學習真耶穌教會詩歌使用，不收集任何個人隱私資料。');" class="w-full py-2.5 bg-brand-purple hover:bg-purple-600 text-white text-xs font-semibold rounded-xl shadow transition">
+                                隱私權政策
+                            </button>
+                            <button onclick="alert('聯絡我們：若有任何程式使用問題或建議，歡迎聯繫開發者。');" class="w-full py-2.5 bg-brand-purple hover:bg-purple-600 text-white text-xs font-semibold rounded-xl shadow transition">
+                                聯絡我們
+                            </button>
+                        </div>
+                        <div class="text-[10px] text-gray-500 pt-3 border-t border-dark-border w-full font-mono">
+                            © 2022 真耶穌教會台灣總會版權所有
                         </div>
                     </div>
                 </div>
@@ -401,6 +467,7 @@
             currentPageIndex: 0,
             favorites: new Set(JSON.parse(localStorage.getItem('amis_favs') || '[]')),
             customUrls: JSON.parse(localStorage.getItem('amis_custom_urls') || '{}'),
+            customAudioUrls: JSON.parse(localStorage.getItem('amis_custom_audio') || '{}'),
             activeTab: 'all',
             viewMode: 'list',
             searchQuery: '',
@@ -449,6 +516,7 @@
             iconFavMain: document.getElementById('icon-fav-main'),
             btnShare: document.getElementById('btn-share'),
             btnFullscreen: document.getElementById('btn-fullscreen'),
+            btnAudio: document.getElementById('btn-audio'),
             
             btnPrev: document.getElementById('btn-prev'),
             btnNext: document.getElementById('btn-next'),
@@ -457,6 +525,16 @@
             sidebarOverlay: document.getElementById('sidebar-overlay'),
             toggleSidebar: document.getElementById('toggle-sidebar'),
             closeSidebar: document.getElementById('close-sidebar'),
+            floatingMenuBtn: document.getElementById('floating-menu-btn'),
+
+            btnAbout: document.getElementById('btn-about'),
+            aboutModal: document.getElementById('about-modal'),
+            btnCloseAbout: document.getElementById('btn-close-about'),
+
+            audioModal: document.getElementById('audio-modal'),
+            btnCloseAudio: document.getElementById('btn-close-audio'),
+            audioPlayer: document.getElementById('audio-player'),
+            modalAudioNum: document.getElementById('modal-audio-num'),
 
             btnCustomUrl: document.getElementById('btn-custom-url'),
             urlModal: document.getElementById('url-modal'),
@@ -492,6 +570,17 @@
 
             const title = song ? song.title : '';
             return `https://placehold.co/800x1100/161b22/a855f7?text=A-${songNum}+${encodeURIComponent(title)}+(P.${pageIndex + 1})\n\n[+Google+Drive+ID:+${driveId || 'N/A'}+]`;
+        }
+
+        function getAudioUrl(songNum) {
+            if (state.customAudioUrls[songNum]) {
+                return state.customAudioUrls[songNum];
+            }
+            const song = songsData.find(s => s.num === songNum);
+            if (song && song.audioDriveId) {
+                return `https://docs.google.com/uc?export=download&id=${song.audioDriveId}`;
+            }
+            return null;
         }
 
         function renderSongList() {
@@ -595,6 +684,14 @@
             elements.currentBadge.textContent = `A-${song.num}`;
             elements.currentTitle.textContent = song.title;
             elements.mobileCurrentTitle.textContent = `${song.num} ${song.title}`;
+
+            // Check if audio exists
+            const audioUrl = getAudioUrl(num);
+            if (audioUrl) {
+                elements.btnAudio.classList.remove('hidden');
+            } else {
+                elements.btnAudio.classList.add('hidden');
+            }
 
             if (totalPages > 1) {
                 elements.pageSwitcherContainer.classList.remove('hidden');
@@ -738,19 +835,7 @@
             updateTransform();
         }
 
-        // 自動嘗試進入全螢幕隱藏瀏覽器網址列與工具列
-        function triggerFullScreen() {
-            if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            }
-        }
-
-        // 點擊頁面或圖片時自動隱藏/顯示 UI 並且順便嘗試隱藏網址列
-        document.addEventListener('click', () => {
-            triggerFullScreen();
-        }, { once: true });
-
-        // 點擊詩歌圖片時隱藏/顯示工具列與選單
+        // 點擊詩歌圖片時隱藏/顯示上方工具列與側邊選單（保留上一首/下一首與全螢幕按鈕）
         elements.scoreImg.addEventListener('click', (e) => {
             e.stopPropagation();
             state.uiHidden = !state.uiHidden;
@@ -762,9 +847,19 @@
             }
         });
 
+        // 點擊左上角懸浮選單按鈕恢復 UI
+        elements.floatingMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            state.uiHidden = false;
+            elements.appBody.classList.remove('hide-ui');
+            if (window.innerWidth < 1024) {
+                openSidebar();
+            }
+        });
+
         // 桌面端滑鼠拖曳平移
         elements.viewport.addEventListener('mousedown', (e) => {
-            if (e.target.closest('#url-modal') || e.target.closest('button')) return;
+            if (e.target.closest('#url-modal') || e.target.closest('#audio-modal') || e.target.closest('#about-modal') || e.target.closest('button')) return;
             state.isDragging = true;
             state.dragStart = { x: e.clientX - state.panX, y: e.clientY - state.panY };
         });
@@ -787,7 +882,7 @@
         }
 
         elements.viewport.addEventListener('touchstart', (e) => {
-            if (e.target.closest('button') || e.target.closest('#url-modal')) return;
+            if (e.target.closest('button') || e.target.closest('#url-modal') || e.target.closest('#audio-modal') || e.target.closest('#about-modal')) return;
             
             if (e.touches.length === 1) {
                 state.isDragging = true;
@@ -854,6 +949,30 @@
 
         elements.btnToggleFav.addEventListener('click', () => toggleFavorite(state.currentNum));
         elements.btnShare.addEventListener('click', shareCurrentSong);
+
+        // 關於頁面 Modal 控制
+        elements.btnAbout.addEventListener('click', () => {
+            elements.aboutModal.classList.remove('hidden');
+            if (window.innerWidth < 1024) closeSidebar();
+        });
+        elements.btnCloseAbout.addEventListener('click', () => {
+            elements.aboutModal.classList.add('hidden');
+        });
+
+        // 音檔播放 Modal 控制
+        elements.btnAudio.addEventListener('click', () => {
+            elements.modalAudioNum.textContent = state.currentNum;
+            const audioUrl = getAudioUrl(state.currentNum);
+            if (audioUrl) {
+                elements.audioPlayer.src = audioUrl;
+                elements.audioModal.classList.remove('hidden');
+                elements.audioPlayer.play().catch(() => {});
+            }
+        });
+        elements.btnCloseAudio.addEventListener('click', () => {
+            elements.audioPlayer.pause();
+            elements.audioModal.classList.add('hidden');
+        });
 
         elements.searchInput.addEventListener('input', (e) => {
             state.searchQuery = e.target.value.trim();
@@ -930,6 +1049,7 @@
             selectSong(state.currentNum, state.currentPageIndex);
         });
 
+        // 工具列上的全螢幕按鈕
         elements.btnFullscreen.addEventListener('click', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(() => {});
