@@ -58,13 +58,10 @@
             cursor: grabbing;
         }
 
-        /* 隱藏 UI 時的動畫與版面收合 */
-        header, aside, #top-toolbar {
-            transition: opacity 0.3s ease, visibility 0.3s ease, height 0.3s ease;
-        }
-        .hide-ui #top-header,
-        .hide-ui #sidebar,
-        .hide-ui #top-toolbar {
+        /* 僅隱藏上方工具列與側邊選單的樣式 */
+        .hide-top-and-sidebar #top-header,
+        .hide-top-and-sidebar #sidebar,
+        .hide-top-and-sidebar #top-toolbar {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
@@ -73,26 +70,27 @@
             margin: 0 !important;
             border: none !important;
             overflow: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, height 0.3s ease;
         }
-        .hide-ui #sidebar {
+        .hide-top-and-sidebar #sidebar {
             width: 0 !important;
         }
-        /* 隱藏 UI 時顯示左上角返回按鈕 */
-        #floating-menu-btn {
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+        
+        /* 3秒自動隱藏的浮動按鈕群組 */
+        .auto-fade-btn {
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
-        .hide-ui #floating-menu-btn {
-            opacity: 1;
-            visibility: visible;
+        .fade-out {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
         }
     </style>
 </head>
 <body class="bg-dark-bg text-gray-200 h-full flex flex-col font-sans overflow-hidden" id="app-body">
 
     <!-- Mobile Header Bar -->
-    <header id="top-header" class="lg:hidden bg-dark-card border-b border-dark-border px-3 py-1.5 flex items-center justify-between z-25 flex-shrink-0">
+    <header id="top-header" class="lg:hidden bg-dark-card border-b border-dark-border px-3 py-1.5 flex items-center justify-between z-25 flex-shrink-0 transition-all duration-300">
         <div class="flex items-center space-x-2">
             <button id="toggle-sidebar" class="p-1.5 text-gray-300 hover:text-white rounded-lg hover:bg-dark-hover">
                 <i class="fa-solid fa-bars text-base"></i>
@@ -184,7 +182,7 @@
         <main class="flex-1 flex flex-col bg-dark-bg overflow-hidden relative h-full">
             
             <!-- Top Toolbar -->
-            <div id="top-toolbar" class="bg-dark-card border-b border-dark-border px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 z-10 shadow-sm flex-shrink-0">
+            <div id="top-toolbar" class="bg-dark-card border-b border-dark-border px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 z-10 shadow-sm flex-shrink-0 transition-all duration-300">
                 
                 <!-- Left Info Section -->
                 <div class="flex items-center space-x-2.5 overflow-hidden">
@@ -194,12 +192,6 @@
                     <div class="truncate">
                         <h2 id="current-title" class="text-white font-bold text-xs sm:text-sm truncate">Hemeken ko pikansiya</h2>
                     </div>
-                </div>
-
-                <!-- Page Switcher (Visible when song has multiple pages) -->
-                <div id="page-switcher-container" class="hidden flex items-center space-x-1 bg-dark-bg p-0.5 rounded-lg border border-dark-border">
-                    <span class="text-[10px] text-gray-400 px-1 font-mono">頁數:</span>
-                    <div id="page-buttons" class="flex space-x-1"></div>
                 </div>
 
                 <!-- Right Tools Section -->
@@ -249,27 +241,19 @@
                     </div>
                 </div>
 
-                <!-- Floating Menu Button (Shown when UI is hidden) -->
-                <button id="floating-menu-btn" class="absolute top-4 left-4 z-40 bg-dark-card/90 hover:bg-brand-purple text-white px-3.5 py-2 rounded-xl backdrop-blur-md border border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-2 transition-all">
+                <!-- Floating Menu Button (3秒自動隱藏) -->
+                <button id="floating-menu-btn" class="auto-fade-btn absolute top-4 left-4 z-40 bg-dark-card/90 hover:bg-brand-purple text-white px-3.5 py-2 rounded-xl backdrop-blur-md border border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-2 transition-all">
                     <i class="fa-solid fa-bars"></i>
                     <span>選單</span>
                 </button>
 
-                <!-- Floating Page Navigation Arrows -->
-                <button id="float-prev-page" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-brand-purple text-white w-10 h-16 rounded-r-xl backdrop-blur-sm border-y border-r border-dark-border flex items-center justify-center transition shadow-lg hidden" title="上一頁">
-                    <i class="fa-solid fa-chevron-left text-sm"></i>
-                </button>
-                <button id="float-next-page" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-brand-purple text-white w-10 h-16 rounded-l-xl backdrop-blur-sm border-y border-l border-dark-border flex items-center justify-center transition shadow-lg hidden" title="下一頁">
-                    <i class="fa-solid fa-chevron-right text-sm"></i>
-                </button>
-
-                <!-- Floating Song Navigation Buttons -->
-                <button id="btn-prev" class="absolute left-4 bottom-6 z-30 bg-black/70 hover:bg-brand-purple text-gray-200 hover:text-white px-4 py-2.5 rounded-xl backdrop-blur-md border border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-1.5 transition-all">
+                <!-- Floating Song Navigation Buttons (3秒自動隱藏) -->
+                <button id="btn-prev" class="auto-fade-btn absolute left-4 bottom-6 z-30 bg-black/70 hover:bg-brand-purple text-gray-200 hover:text-white px-4 py-2.5 rounded-xl backdrop-blur-md border border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-1.5 transition-all">
                     <i class="fa-solid fa-chevron-left text-[10px]"></i>
                     <span>上一首</span>
                 </button>
 
-                <button id="btn-next" class="absolute right-4 bottom-6 z-30 bg-black/70 hover:bg-brand-purple text-gray-200 hover:text-white px-4 py-2.5 rounded-xl backdrop-blur-md border border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-1.5 transition-all">
+                <button id="btn-next" class="auto-fade-btn absolute right-4 bottom-6 z-30 bg-black/70 hover:bg-brand-purple text-gray-200 hover:text-white px-4 py-2.5 rounded-xl backdrop-blur-md border border-dark-border shadow-2xl text-xs font-medium flex items-center space-x-1.5 transition-all">
                     <span>下一首</span>
                     <i class="fa-solid fa-chevron-right text-[10px]"></i>
                 </button>
@@ -279,12 +263,9 @@
                     已複製完整詩歌網址到剪貼簿！
                 </div>
 
-                <!-- Score Image Container -->
-                <div id="img-container" class="transition-transform duration-75 ease-out flex items-center justify-center w-full h-full">
-                    <img id="score-img" 
-                         src="https://placehold.co/800x1100/161b22/a855f7?text=A-311+Hemeken+ko+pikansiya\n\n[+真耶穌教會阿美語詩歌+]" 
-                         alt="詩歌樂譜" 
-                         class="max-h-full max-w-full w-auto h-auto rounded-none shadow-2xl object-contain border-0 cursor-pointer">
+                <!-- Score Images Container (多頁並排容器) -->
+                <div id="img-container" class="transition-transform duration-75 ease-out flex items-center justify-center w-full h-full gap-4 p-4">
+                    <!-- 圖片會由 JS 動態塞入 -->
                 </div>
 
                 <!-- Audio Player Modal Container -->
@@ -328,11 +309,9 @@
                 <!-- About Modal Container -->
                 <div id="about-modal" class="absolute inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
                     <div class="bg-dark-card border border-dark-border rounded-2xl p-6 max-w-xs w-full shadow-2xl flex flex-col items-center text-center space-y-4 relative">
-                        <!-- 右上角關閉按鈕 (X) -->
                         <button id="btn-close-about" class="absolute top-4 right-4 text-gray-400 hover:text-white w-7 h-7 flex items-center justify-center rounded-lg hover:bg-dark-hover transition">
                             <i class="fa-solid fa-xmark text-base"></i>
                         </button>
-                        <!-- 關於頁面指定的 Logo 圖片 -->
                         <div class="w-16 h-16 rounded-2xl overflow-hidden shadow-lg mt-2 bg-dark-bg flex items-center justify-center border border-dark-border">
                             <img src="tjc_logo.jpg" alt="TJC Logo" class="w-full h-full object-cover">
                         </div>
@@ -367,7 +346,7 @@
             { num: 313, title: "KA LIPAHAKAN KYA ROMA' I KAKARAYAN", driveId: "1Gguu7kxfMgcvajRgxCCW1S5pfxzrNlKJ" , audioId: "" },
             { num: 314, title: "MI LISO'AY KO SALIKAKA", driveId: "1q9eehYxCCcn2BSq1FJv0aXsRYlvD4aXv" , audioId: "" },
             { num: 315, title: "HEMEKEN TA CI YIS", driveId: "1nX9kdefjCr7HUkzM6RSnRlCjVQwRnjp-" , audioId: "" },
-            { num: 316, title: "MA FANA' CI YIS TO LALOM NO MISO", driveId: "1lQPM-Mb0XVSGcRxqwBuCvDdpOISHbvO" , audioId: "" },
+            { num: 316, title: "MA FANA' CI YIS TO LALOM NO MISO", driveId: "1lQPM-Mb0XVSGcRxqwBuCvDdpOISHbvO_" , audioId: "" },
             { num: 317, title: "'ALETEGAY A RARAW", driveId: "150lbT26UAiVa8k9Q06RUGnCVXE-ZxOp5" , audioId: "" },
             { num: 318, title: "ANINI MI TOOL TO WAMA", driveId: "1QorVq4bKbIzjv3L6PO6KzT4ISL3sEi-M" , audioId: "" },
             { num: 319, title: "MI COMPIAY KO WAMA KAKI TILAAN", driveId: "16WKsYBQNPcx2Y4-YszHM92VGrPqWXS1D" , audioId: "" },
@@ -467,7 +446,6 @@
 
         let state = {
             currentNum: 311,
-            currentPageIndex: 0,
             favorites: new Set(JSON.parse(localStorage.getItem('amis_favs') || '[]')),
             customUrls: JSON.parse(localStorage.getItem('amis_custom_urls') || '{}'),
             customAudioUrls: JSON.parse(localStorage.getItem('amis_custom_audio') || '{}'),
@@ -481,8 +459,11 @@
             dragStart: { x: 0, y: 0 },
             initialPinchDistance: null,
             initialZoom: 1,
-            uiHidden: false
+            topAndSidebarHidden: false,
+            floatingHidden: false
         };
+
+        let autoHideTimer = null;
 
         const elements = {
             songContainer: document.getElementById('song-container'),
@@ -499,17 +480,11 @@
             currentBadge: document.getElementById('current-badge'),
             currentTitle: document.getElementById('current-title'),
             mobileCurrentTitle: document.getElementById('mobile-current-title'),
-            scoreImg: document.getElementById('score-img'),
             imgContainer: document.getElementById('img-container'),
             loadingSpinner: document.getElementById('loading-spinner'),
             viewport: document.getElementById('viewport'),
             toastNotification: document.getElementById('toast-notification'),
             appBody: document.getElementById('app-body'),
-            
-            pageSwitcherContainer: document.getElementById('page-switcher-container'),
-            pageButtons: document.getElementById('page-buttons'),
-            floatPrevPage: document.getElementById('float-prev-page'),
-            floatNextPage: document.getElementById('float-next-page'),
 
             btnZoomIn: document.getElementById('btn-zoom-in'),
             btnZoomOut: document.getElementById('btn-zoom-out'),
@@ -652,7 +627,7 @@
                         e.stopPropagation();
                         toggleFavorite(song.num);
                     } else {
-                        selectSong(song.num, 0);
+                        selectSong(song.num);
                         if (window.innerWidth < 1024) {
                             closeSidebar();
                         }
@@ -667,22 +642,14 @@
             elements.totalSongs.textContent = filtered.length;
         }
 
-        function selectSong(num, pageIndex = 0) {
+        function selectSong(num) {
             state.currentNum = num;
-            state.currentPageIndex = pageIndex;
-
             window.location.hash = `#${num}`;
 
             const song = songsData.find(s => s.num === num);
             if (!song) return;
 
             document.title = `第 ${song.num} 首 - ${song.title} | 真耶穌教會阿美語詩歌`;
-
-            const ids = getSongDriveIds(song);
-            const totalPages = Math.max(1, ids.length);
-
-            if (state.currentPageIndex >= totalPages) state.currentPageIndex = totalPages - 1;
-            if (state.currentPageIndex < 0) state.currentPageIndex = 0;
 
             elements.currentBadge.textContent = `A-${song.num}`;
             elements.currentTitle.textContent = song.title;
@@ -695,39 +662,6 @@
                 elements.btnAudio.classList.add('hidden');
             }
 
-            if (totalPages > 1) {
-                elements.pageSwitcherContainer.classList.remove('hidden');
-
-                if (state.currentPageIndex > 0) {
-                    elements.floatPrevPage.classList.remove('hidden');
-                } else {
-                    elements.floatPrevPage.classList.add('hidden');
-                }
-
-                if (state.currentPageIndex < totalPages - 1) {
-                    elements.floatNextPage.classList.remove('hidden');
-                } else {
-                    elements.floatNextPage.classList.add('hidden');
-                }
-
-                elements.pageButtons.innerHTML = '';
-                for (let i = 0; i < totalPages; i++) {
-                    const btn = document.createElement('button');
-                    btn.className = `px-2 py-0.5 rounded text-xs font-mono transition ${
-                        i === state.currentPageIndex
-                            ? 'bg-brand-purple text-white font-bold shadow-sm'
-                            : 'text-gray-400 hover:text-white hover:bg-dark-hover'
-                    }`;
-                    btn.textContent = `頁 ${i + 1}`;
-                    btn.addEventListener('click', () => selectSong(num, i));
-                    elements.pageButtons.appendChild(btn);
-                }
-            } else {
-                elements.pageSwitcherContainer.classList.add('hidden');
-                elements.floatPrevPage.classList.add('hidden');
-                elements.floatNextPage.classList.add('hidden');
-            }
-
             if (state.favorites.has(num)) {
                 elements.iconFavMain.className = 'fa-solid fa-bookmark text-amber-400';
             } else {
@@ -735,21 +669,39 @@
             }
 
             elements.loadingSpinner.classList.remove('hidden');
-            const imgUrl = getImageUrl(num, state.currentPageIndex);
+            
+            const ids = getSongDriveIds(song);
+            const totalPages = Math.max(1, ids.length);
+            
+            elements.imgContainer.innerHTML = '';
+            
+            let loadedCount = 0;
+            for (let i = 0; i < totalPages; i++) {
+                const imgUrl = getImageUrl(num, i);
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.alt = `詩歌 ${song.num} 頁碼 ${i + 1}`;
+                img.className = 'max-h-full max-w-full w-auto h-auto rounded shadow-2xl object-contain border-0 cursor-pointer flex-shrink-0';
 
-            const tempImg = new Image();
-            tempImg.onload = () => {
-                elements.scoreImg.src = imgUrl;
-                elements.loadingSpinner.classList.add('hidden');
-            };
-            tempImg.onerror = () => {
-                elements.scoreImg.src = `https://placehold.co/800x1100/161b22/ef4444?text=A-${num}+${encodeURIComponent(song.title)}+(P.${state.currentPageIndex + 1})\n\n[+圖片載入失敗+]`;
-                elements.loadingSpinner.classList.add('hidden');
-            };
-            tempImg.src = imgUrl;
+                img.onload = () => {
+                    loadedCount++;
+                    if (loadedCount === totalPages) {
+                        elements.loadingSpinner.classList.add('hidden');
+                    }
+                };
+                img.onerror = () => {
+                    loadedCount++;
+                    if (loadedCount === totalPages) {
+                        elements.loadingSpinner.classList.add('hidden');
+                    }
+                };
 
-            updateTransform();
+                elements.imgContainer.appendChild(img);
+            }
+
+            resetZoom();
             renderSongList();
+            showFloatingUIAndResetTimer();
         }
 
         function toggleFavorite(num) {
@@ -805,18 +757,7 @@
         function navigateSong(delta) {
             const newNum = state.currentNum + delta;
             if (newNum >= 311 && newNum <= 411) {
-                selectSong(newNum, 0);
-            }
-        }
-
-        function switchPage(delta) {
-            const song = songsData.find(s => s.num === state.currentNum);
-            const ids = getSongDriveIds(song);
-            if (ids.length > 1) {
-                const newPageIndex = state.currentPageIndex + delta;
-                if (newPageIndex >= 0 && newPageIndex < ids.length) {
-                    selectSong(state.currentNum, newPageIndex);
-                }
+                selectSong(newNum);
             }
         }
 
@@ -837,19 +778,60 @@
             updateTransform();
         }
 
-        // 點擊圖片隱藏側邊選單與上方工具列
-        elements.scoreImg.addEventListener('click', (e) => {
-            state.uiHidden = true;
-            elements.appBody.classList.add('hide-ui');
-        });
+        // 浮動按鈕（選單/上一首/下一首）3秒自動隱藏與顯示控制
+        function showFloatingUIAndResetTimer() {
+            state.floatingHidden = false;
+            document.querySelectorAll('.auto-fade-btn').forEach(btn => {
+                btn.classList.remove('fade-out');
+            });
 
-        // 點擊左上角懸浮選單按鈕顯示側邊選單與上方工具列
+            if (autoHideTimer) clearTimeout(autoHideTimer);
+            autoHideTimer = setTimeout(() => {
+                document.querySelectorAll('.auto-fade-btn').forEach(btn => {
+                    btn.classList.add('fade-out');
+                });
+                state.floatingHidden = true;
+            }, 3000);
+        }
+
+        function hideTopAndSidebarAction() {
+            state.topAndSidebarHidden = true;
+            elements.appBody.classList.add('hide-top-and-sidebar');
+        }
+
+        function showTopAndSidebarAction() {
+            state.topAndSidebarHidden = false;
+            elements.appBody.classList.remove('hide-top-and-sidebar');
+        }
+
+        // 點擊左上角懸浮選單按鈕：展開側邊選單，並重置浮動按鈕計時器
         elements.floatingMenuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            state.uiHidden = false;
-            elements.appBody.classList.remove('hide-ui');
+            showFloatingUIAndResetTimer();
             if (window.innerWidth < 1024) {
                 openSidebar();
+            } else {
+                // 桌機版點擊選單按鈕時，若上方工具列被隱藏了可以順便顯示，或依需求展開
+                if (state.topAndSidebarHidden) {
+                    showTopAndSidebarAction();
+                }
+            }
+        });
+
+        // 點擊檢視區（viewport）空白處或圖片時的互動邏輯
+        elements.viewport.addEventListener('click', (e) => {
+            if (e.target.closest('#url-modal') || e.target.closest('#audio-modal') || e.target.closest('#about-modal') || e.target.closest('button')) return;
+            
+            if (state.floatingHidden) {
+                // 若浮動按鈕處於隱藏狀態，點擊圖片時只顯示浮動按鈕（不影響上方工具列與側邊欄）
+                showFloatingUIAndResetTimer();
+            } else {
+                // 若浮動按鈕是顯示的，點擊圖片則隱藏上方工具列與側邊選單
+                if (state.topAndSidebarHidden) {
+                    showTopAndSidebarAction();
+                } else {
+                    hideTopAndSidebarAction();
+                }
             }
         });
 
@@ -930,15 +912,6 @@
         elements.btnPrev.addEventListener('click', () => navigateSong(-1));
         elements.btnNext.addEventListener('click', () => navigateSong(1));
 
-        elements.floatPrevPage.addEventListener('click', (e) => {
-            e.stopPropagation();
-            switchPage(-1);
-        });
-        elements.floatNextPage.addEventListener('click', (e) => {
-            e.stopPropagation();
-            switchPage(1);
-        });
-
         elements.btnZoomIn.addEventListener('click', () => zoom(0.2));
         elements.btnZoomOut.addEventListener('click', () => zoom(-0.2));
         elements.btnZoomReset.addEventListener('click', resetZoom);
@@ -1012,9 +985,8 @@
         });
 
         elements.btnCustomUrl.addEventListener('click', () => {
-            elements.modalSongNum.textContent = `${state.currentNum} (頁 ${state.currentPageIndex + 1})`;
-            const key = `${state.currentNum}_${state.currentPageIndex}`;
-            elements.inputCustomUrl.value = state.customUrls[key] || state.customUrls[state.currentNum] || '';
+            elements.modalSongNum.textContent = `${state.currentNum}`;
+            elements.inputCustomUrl.value = state.customUrls[state.currentNum] || '';
             elements.urlModal.classList.remove('hidden');
         });
 
@@ -1024,25 +996,22 @@
 
         elements.btnSaveUrl.addEventListener('click', () => {
             const url = elements.inputCustomUrl.value.trim();
-            const key = `${state.currentNum}_${state.currentPageIndex}`;
             if (url) {
-                state.customUrls[key] = url;
+                state.customUrls[state.currentNum] = url;
             } else {
-                delete state.customUrls[key];
+                delete state.customUrls[state.currentNum];
             }
             localStorage.setItem('amis_custom_urls', JSON.stringify(state.customUrls));
             elements.urlModal.classList.add('hidden');
-            selectSong(state.currentNum, state.currentPageIndex);
+            selectSong(state.currentNum);
         });
 
         elements.btnResetUrl.addEventListener('click', () => {
-            const key = `${state.currentNum}_${state.currentPageIndex}`;
-            delete state.customUrls[key];
             delete state.customUrls[state.currentNum];
             localStorage.setItem('amis_custom_urls', JSON.stringify(state.customUrls));
             elements.inputCustomUrl.value = '';
             elements.urlModal.classList.add('hidden');
-            selectSong(state.currentNum, state.currentPageIndex);
+            selectSong(state.currentNum);
         });
 
         // 工具列上的全螢幕按鈕
@@ -1063,10 +1032,6 @@
                 navigateSong(-1);
             } else if (e.key === 'ArrowRight') {
                 navigateSong(1);
-            } else if (e.key === 'ArrowUp') {
-                switchPage(-1);
-            } else if (e.key === 'ArrowDown') {
-                switchPage(1);
             } else if (e.key === '+' || e.key === '=') {
                 zoom(0.2);
             } else if (e.key === '-') {
@@ -1088,7 +1053,7 @@
 
         renderSongList();
         const initialNum = initFromHash();
-        selectSong(initialNum, 0);
+        selectSong(initialNum);
     </script>
 </body>
 </html>
