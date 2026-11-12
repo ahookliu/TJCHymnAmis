@@ -753,7 +753,6 @@
 
             elements.loadingSpinner.classList.remove('hidden');
 
-            // 檢查是否有兩頁圖片可供同時並排顯示（若 ids.length >= 2）
             const hasTwoPages = ids.length >= 2;
 
             if (hasTwoPages) {
@@ -967,15 +966,30 @@
                 state.initialPinchDistance = null;
             }
             if (e.touches.length === 0 && state.isDragging) {
-                // 檢查是否為左右滑動手勢（未放大時滑動切換上一首/下一首）
+                // 檢查是否為未放大時的左右滑動手勢
                 if (state.zoom === 1 && e.changedTouches.length > 0) {
                     const deltaX = e.changedTouches[0].clientX - state.touchStartX;
                     const deltaY = e.changedTouches[0].clientY - state.touchStartY;
+                    
                     if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY)) {
-                        if (deltaX > 0) {
-                            navigateSong(-1); // 往右滑：上一首
+                        const song = songsData.find(s => s.num === state.currentNum);
+                        const ids = getSongDriveIds(song);
+                        const hasTwoPages = ids.length >= 2;
+
+                        if (hasTwoPages) {
+                            // 若有 2 頁圖片並列顯示，左右滑動改為切換頁面（例如放大檢視時可透過滑動左右切換頁面）
+                            if (deltaX > 0) {
+                                switchPage(-1); // 往右滑：上一頁
+                            } else {
+                                switchPage(1);  // 往左滑：下一頁
+                            }
                         } else {
-                            navigateSong(1);  // 往左滑：下一首
+                            // 若只有 1 頁，滑動切換上一首/下一首
+                            if (deltaX > 0) {
+                                navigateSong(-1); 
+                            } else {
+                                navigateSong(1);  
+                            }
                         }
                     }
                 }
