@@ -289,12 +289,16 @@
                     已複製完整詩歌網址到剪貼簿！
                 </div>
 
-                <!-- Score Image Container (單張圖片容器) -->
-                <div id="img-container" class="transition-transform duration-75 ease-out flex items-center justify-center w-full h-full">
-                    <img id="score-img" 
-                         src="https://placehold.co/800x1100/161b22/a855f7?text=A-311+Hemeken+ko+pikansiya\n\n[+真耶穌教會阿美語詩歌+]" 
-                         alt="詩歌樂譜" 
-                         class="max-h-full max-w-full w-auto h-auto rounded-none shadow-2xl object-contain border-0 cursor-pointer">
+                <!-- Score Images Container (支援單張或並排雙頁顯示) -->
+                <div id="img-container" class="transition-transform duration-75 ease-out flex items-center justify-center w-full h-full gap-4 px-4">
+                    <img id="score-img-1" 
+                         src="" 
+                         alt="詩歌樂譜第1頁" 
+                         class="max-h-full max-w-full w-auto h-auto rounded shadow-2xl object-contain border-0 cursor-pointer">
+                    <img id="score-img-2" 
+                         src="" 
+                         alt="詩歌樂譜第2頁" 
+                         class="max-h-full max-w-full w-auto h-auto rounded shadow-2xl object-contain border-0 cursor-pointer hidden">
                 </div>
 
                 <!-- Custom URL Modal Container -->
@@ -498,6 +502,8 @@
             panY: 0,
             isDragging: false,
             dragStart: { x: 0, y: 0 },
+            touchStartX: 0,
+            touchStartY: 0,
             initialPinchDistance: null,
             initialZoom: 1,
             topAndSidebarHidden: false,
@@ -521,7 +527,8 @@
             currentBadge: document.getElementById('current-badge'),
             currentTitle: document.getElementById('current-title'),
             mobileCurrentTitle: document.getElementById('mobile-current-title'),
-            scoreImg: document.getElementById('score-img'),
+            scoreImg1: document.getElementById('score-img-1'),
+            scoreImg2: document.getElementById('score-img-2'),
             imgContainer: document.getElementById('img-container'),
             loadingSpinner: document.getElementById('loading-spinner'),
             viewport: document.getElementById('viewport'),
@@ -745,19 +752,23 @@
             }
 
             elements.loadingSpinner.classList.remove('hidden');
-            const imgUrl = getImageUrl(num, state.currentPageIndex);
 
-            const tempImg = new Image();
-            tempImg.onload = () => {
-                elements.scoreImg.src = imgUrl;
-                elements.loadingSpinner.classList.add('hidden');
-            };
-            tempImg.onerror = () => {
-                elements.scoreImg.src = `https://placehold.co/800x1100/161b22/ef4444?text=A-${num}+${encodeURIComponent(song.title)}+(P.${state.currentPageIndex + 1})\n\n[+圖片載入失敗+]`;
-                elements.loadingSpinner.classList.add('hidden');
-            };
-            tempImg.src = imgUrl;
+            // 檢查是否有兩頁圖片可供同時並排顯示（若 ids.length >= 2）
+            const hasTwoPages = ids.length >= 2;
 
+            if (hasTwoPages) {
+                const imgUrl1 = getImageUrl(num, 0);
+                const imgUrl2 = getImageUrl(num, 1);
+                elements.scoreImg1.src = imgUrl1;
+                elements.scoreImg2.src = imgUrl2;
+                elements.scoreImg2.classList.remove('hidden');
+            } else {
+                const imgUrl = getImageUrl(num, state.currentPageIndex);
+                elements.scoreImg1.src = imgUrl;
+                elements.scoreImg2.classList.add('hidden');
+            }
+
+            elements.loadingSpinner.classList.add('hidden');
             resetZoom();
             renderSongList();
             showFloatingUIAndResetTimer();
@@ -922,6 +933,8 @@
             
             if (e.touches.length === 1) {
                 state.isDragging = true;
+                state.touchStartX = e.touches[0].clientX;
+                state.touchStartY = e.touches[0].clientY;
                 state.dragStart = { 
                     x: e.touches[0].clientX - state.panX, 
                     y: e.touches[0].clientY - state.panY 
@@ -953,7 +966,19 @@
             if (e.touches.length < 2) {
                 state.initialPinchDistance = null;
             }
-            if (e.touches.length === 0) {
+            if (e.touches.length === 0 && state.isDragging) {
+                // 檢查是否為左右滑動手勢（未放大時滑動切換上一首/下一首）
+                if (state.zoom === 1 && e.changedTouches.length > 0) {
+                    const deltaX = e.changedTouches[0].clientX - state.touchStartX;
+                    const deltaY = e.changedTouches[0].clientY - state.touchStartY;
+                    if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                        if (deltaX > 0) {
+                            navigateSong(-1); // 往右滑：上一首
+                        } else {
+                            navigateSong(1);  // 往左滑：下一首
+                        }
+                    }
+                }
                 state.isDragging = false;
             }
         });
