@@ -289,16 +289,12 @@
                     已複製完整詩歌網址到剪貼簿！
                 </div>
 
-                <!-- Score Images Container (支援單張或並排雙頁顯示) -->
-                <div id="img-container" class="transition-transform duration-75 ease-out flex items-center justify-center w-full h-full gap-2 px-2">
-                    <img id="score-img-1" 
-                         src="" 
-                         alt="詩歌樂譜第1頁" 
-                         class="max-h-full max-w-full w-auto h-auto rounded shadow-2xl object-contain border-0 cursor-pointer">
-                    <img id="score-img-2" 
-                         src="" 
-                         alt="詩歌樂譜第2頁" 
-                         class="max-h-full max-w-full w-auto h-auto rounded shadow-2xl object-contain border-0 cursor-pointer hidden">
+                <!-- Score Image Container (單張圖片容器) -->
+                <div id="img-container" class="transition-transform duration-75 ease-out flex items-center justify-center w-full h-full">
+                    <img id="score-img" 
+                         src="https://placehold.co/800x1100/161b22/a855f7?text=A-311+Hemeken+ko+pikansiya\n\n[+真耶穌教會阿美語詩歌+]" 
+                         alt="詩歌樂譜" 
+                         class="max-h-full max-w-full w-auto h-auto rounded-none shadow-2xl object-contain border-0 cursor-pointer">
                 </div>
 
                 <!-- Custom URL Modal Container -->
@@ -502,8 +498,6 @@
             panY: 0,
             isDragging: false,
             dragStart: { x: 0, y: 0 },
-            touchStartX: 0,
-            touchStartY: 0,
             initialPinchDistance: null,
             initialZoom: 1,
             topAndSidebarHidden: false,
@@ -527,8 +521,7 @@
             currentBadge: document.getElementById('current-badge'),
             currentTitle: document.getElementById('current-title'),
             mobileCurrentTitle: document.getElementById('mobile-current-title'),
-            scoreImg1: document.getElementById('score-img-1'),
-            scoreImg2: document.getElementById('score-img-2'),
+            scoreImg: document.getElementById('score-img'),
             imgContainer: document.getElementById('img-container'),
             loadingSpinner: document.getElementById('loading-spinner'),
             viewport: document.getElementById('viewport'),
@@ -752,25 +745,19 @@
             }
 
             elements.loadingSpinner.classList.remove('hidden');
+            const imgUrl = getImageUrl(num, state.currentPageIndex);
 
-            const hasTwoPages = ids.length >= 2;
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                elements.scoreImg.src = imgUrl;
+                elements.loadingSpinner.classList.add('hidden');
+            };
+            tempImg.onerror = () => {
+                elements.scoreImg.src = `https://placehold.co/800x1100/161b22/ef4444?text=A-${num}+${encodeURIComponent(song.title)}+(P.${state.currentPageIndex + 1})\n\n[+圖片載入失敗+]`;
+                elements.loadingSpinner.classList.add('hidden');
+            };
+            tempImg.src = imgUrl;
 
-            if (hasTwoPages) {
-                const imgUrl1 = getImageUrl(num, 0);
-                const imgUrl2 = getImageUrl(num, 1);
-                elements.scoreImg1.src = imgUrl1;
-                elements.scoreImg2.src = imgUrl2;
-                elements.scoreImg2.classList.remove('hidden');
-                elements.scoreImg1.className = "max-h-full max-w-full w-auto h-auto rounded shadow-2xl object-contain border-0 cursor-pointer";
-                elements.scoreImg2.className = "max-h-full max-w-full w-auto h-auto rounded shadow-2xl object-contain border-0 cursor-pointer";
-            } else {
-                const imgUrl = getImageUrl(num, state.currentPageIndex);
-                elements.scoreImg1.src = imgUrl;
-                elements.scoreImg2.classList.add('hidden');
-                elements.scoreImg1.className = "max-h-full max-w-full w-auto h-auto rounded shadow-2xl object-contain border-0 cursor-pointer";
-            }
-
-            elements.loadingSpinner.classList.add('hidden');
             resetZoom();
             renderSongList();
             showFloatingUIAndResetTimer();
@@ -837,37 +824,7 @@
             if (ids.length > 1) {
                 const newPageIndex = state.currentPageIndex + delta;
                 if (newPageIndex >= 0 && newPageIndex < ids.length) {
-                    // 保留當前縮放比例與平移位置，切換頁面
-                    state.currentPageIndex = newPageIndex;
-                    window.location.hash = `#${state.currentNum}`;
-
-                    elements.currentBadge.textContent = `A-${song.num}`;
-                    elements.currentTitle.textContent = song.title;
-                    elements.mobileCurrentTitle.textContent = `${song.num} ${song.title}`;
-
-                    const hasTwoPages = ids.length >= 2;
-                    if (hasTwoPages) {
-                        elements.scoreImg1.src = getImageUrl(state.currentNum, 0);
-                        elements.scoreImg2.src = getImageUrl(state.currentNum, 1);
-                        elements.scoreImg2.classList.remove('hidden');
-                    } else {
-                        elements.scoreImg1.src = getImageUrl(state.currentNum, state.currentPageIndex);
-                        elements.scoreImg2.classList.add('hidden');
-                    }
-
-                    if (newPageIndex > 0) {
-                        elements.floatPrevPage.classList.remove('hidden');
-                    } else {
-                        elements.floatPrevPage.classList.add('hidden');
-                    }
-
-                    if (newPageIndex < ids.length - 1) {
-                        elements.floatNextPage.classList.remove('hidden');
-                    } else {
-                        elements.floatNextPage.classList.add('hidden');
-                    }
-
-                    showFloatingUIAndResetTimer();
+                    selectSong(state.currentNum, newPageIndex);
                 }
             }
         }
@@ -965,8 +922,6 @@
             
             if (e.touches.length === 1) {
                 state.isDragging = true;
-                state.touchStartX = e.touches[0].clientX;
-                state.touchStartY = e.touches[0].clientY;
                 state.dragStart = { 
                     x: e.touches[0].clientX - state.panX, 
                     y: e.touches[0].clientY - state.panY 
@@ -998,31 +953,7 @@
             if (e.touches.length < 2) {
                 state.initialPinchDistance = null;
             }
-            if (e.touches.length === 0 && state.isDragging) {
-                if (state.zoom === 1 && e.changedTouches.length > 0) {
-                    const deltaX = e.changedTouches[0].clientX - state.touchStartX;
-                    const deltaY = e.changedTouches[0].clientY - state.touchStartY;
-                    
-                    if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY)) {
-                        const song = songsData.find(s => s.num === state.currentNum);
-                        const ids = getSongDriveIds(song);
-                        const hasTwoPages = ids.length >= 2;
-
-                        if (hasTwoPages) {
-                            if (deltaX > 0) {
-                                switchPage(-1); 
-                            } else {
-                                switchPage(1);  
-                            }
-                        } else {
-                            if (deltaX > 0) {
-                                navigateSong(-1); 
-                            } else {
-                                navigateSong(1);  
-                            }
-                        }
-                    }
-                }
+            if (e.touches.length === 0) {
                 state.isDragging = false;
             }
         });
@@ -1050,11 +981,12 @@
         elements.floatPrevPage.addEventListener('click', (e) => {
             e.stopPropagation();
             switchPage(-1);
+            showFloatingUIAndResetTimer();
         });
-
         elements.floatNextPage.addEventListener('click', (e) => {
             e.stopPropagation();
             switchPage(1);
+            showFloatingUIAndResetTimer();
         });
 
         elements.btnZoomIn.addEventListener('click', () => zoom(0.2));
