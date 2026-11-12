@@ -844,6 +844,30 @@
             elements.imgContainer.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
         }
 
+        // 計算雙頁並排時的對齊位移量
+        function alignTwoPages(targetPosition) {
+            const song = songsData.find(s => s.num === state.currentNum);
+            const ids = getSongDriveIds(song);
+            if (ids.length >= 2 && state.zoom === 1) {
+                const viewportWidth = elements.viewport.clientWidth;
+                const containerWidth = elements.imgContainer.scrollWidth;
+                const maxPanX = (containerWidth - viewportWidth) / 2;
+                if (maxPanX > 0) {
+                    if (targetPosition === 'left') {
+                        // 將第一頁最左側切齊左側視窗邊緣
+                        state.panX = maxPanX;
+                    } else if (targetPosition === 'right') {
+                        // 將第二頁最右側切齊右側視窗邊緣
+                        state.panX = -maxPanX;
+                    }
+                    state.panY = 0;
+                    updateTransform();
+                    return;
+                }
+            }
+            resetZoom();
+        }
+
         function zoom(delta) {
             state.zoom = Math.min(Math.max(0.5, state.zoom + delta), 4);
             updateTransform();
@@ -853,7 +877,14 @@
             state.zoom = 1;
             state.panX = 0;
             state.panY = 0;
-            updateTransform();
+            const song = songsData.find(s => s.num === state.currentNum);
+            const ids = getSongDriveIds(song);
+            // 1. 並列雙頁模式時，初始顯示，由第一頁最左側顯示
+            if (ids.length >= 2) {
+                alignTwoPages('left');
+            } else {
+                updateTransform();
+            }
         }
 
         function showFloatingUIAndResetTimer() {
@@ -966,7 +997,6 @@
                 state.initialPinchDistance = null;
             }
             if (e.touches.length === 0 && state.isDragging) {
-                // 檢查是否為未放大時的左右滑動手勢
                 if (state.zoom === 1 && e.changedTouches.length > 0) {
                     const deltaX = e.changedTouches[0].clientX - state.touchStartX;
                     const deltaY = e.changedTouches[0].clientY - state.touchStartY;
@@ -977,14 +1007,12 @@
                         const hasTwoPages = ids.length >= 2;
 
                         if (hasTwoPages) {
-                            // 若有 2 頁圖片並列顯示，左右滑動改為切換頁面（例如放大檢視時可透過滑動左右切換頁面）
                             if (deltaX > 0) {
-                                switchPage(-1); // 往右滑：上一頁
+                                switchPage(-1); 
                             } else {
-                                switchPage(1);  // 往左滑：下一頁
+                                switchPage(1);  
                             }
                         } else {
-                            // 若只有 1 頁，滑動切換上一首/下一首
                             if (deltaX > 0) {
                                 navigateSong(-1); 
                             } else {
@@ -1017,14 +1045,27 @@
         elements.btnPrev.addEventListener('click', () => navigateSong(-1));
         elements.btnNext.addEventListener('click', () => navigateSong(1));
 
+        // 2. 點上一頁時，切換頁面並將第一頁最左側切齊左側視窗邊緣
         elements.floatPrevPage.addEventListener('click', (e) => {
             e.stopPropagation();
             switchPage(-1);
+            const song = songsData.find(s => s.num === state.currentNum);
+            const ids = getSongDriveIds(song);
+            if (ids.length >= 2) {
+                alignTwoPages('left');
+            }
             showFloatingUIAndResetTimer();
         });
+
+        // 3. 點下一頁時，切換頁面並將第二頁最右側切齊右側視窗邊緣
         elements.floatNextPage.addEventListener('click', (e) => {
             e.stopPropagation();
             switchPage(1);
+            const song = songsData.find(s => s.num === state.currentNum);
+            const ids = getSongDriveIds(song);
+            if (ids.length >= 2) {
+                alignTwoPages('right');
+            }
             showFloatingUIAndResetTimer();
         });
 
@@ -1157,8 +1198,14 @@
                 navigateSong(1);
             } else if (e.key === 'ArrowUp') {
                 switchPage(-1);
+                const song = songsData.find(s => s.num === state.currentNum);
+                const ids = getSongDriveIds(song);
+                if (ids.length >= 2) alignTwoPages('left');
             } else if (e.key === 'ArrowDown') {
                 switchPage(1);
+                const song = songsData.find(s => s.num === state.currentNum);
+                const ids = getSongDriveIds(song);
+                if (ids.length >= 2) alignTwoPages('right');
             } else if (e.key === '+' || e.key === '=') {
                 zoom(0.2);
             } else if (e.key === '-') {
